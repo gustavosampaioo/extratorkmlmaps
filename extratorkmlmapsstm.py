@@ -102,6 +102,17 @@ class KMLProcessorApp:
             }
         return dados_cto
 
+    def calcular_soma_portas_por_nome_pon(self, dados_cto):
+        soma_portas = defaultdict(int)
+        for cto_info in dados_cto.values():
+            nome_pon = cto_info.get('nome_pon')
+            nome_sigla = cto_info.get('nome_sigla')
+            portas_utilizadas = cto_info.get('total_portas_utilizadas', 0)
+            if nome_pon and nome_sigla:
+                key = (nome_pon, nome_sigla)
+                soma_portas[key] += portas_utilizadas
+        return soma_portas
+
     def extrair_marcadores(self):
         kml_files = []
         with ZipFile(self.arquivo_kml, 'r') as zip_ref:
@@ -160,7 +171,9 @@ class KMLProcessorApp:
                 else:
                     nova_descricao += "Nenhum Id Ativo\n"
                 nome_sigla = descricao_cto_info.get('nome_sigla', '')
-                soma_portas = self.calcular_soma_portas_por_nome_pon(dados_cto, self.arquivo_kml.name).get((descricao_cto_info['nome_pon'], nome_sigla), 'N/A')
+                # Corrected method call here: removed the second argument
+                soma_portas = self.calcular_soma_portas_por_nome_pon(dados_cto).get(
+                    (descricao_cto_info.get('nome_pon', ''), nome_sigla), 'N/A')
                 nova_descricao += f"\nTotal de Clientes na PON: {soma_portas}\n"
             else:
                 nova_descricao += "Informações CTO não disponíveis.\n"
